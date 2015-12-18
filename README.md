@@ -1,2 +1,1 @@
-# Entropybasedencoding for catagorical variable, basic idea implimented, more code need to modified
-entropybased
+# Entropybasedencoding for Numerical variables, basic idea implimented, varification need to be done
