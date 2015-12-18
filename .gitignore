@@ -1,0 +1,83 @@
+import pandas as pd
+import numpy as np
+import operator
+from collections import defaultdict
+
+
+def entropy_forsplit(labels):
+     total_1 = sum(labels)
+     length = len(labels)
+     #print total_1,length
+     if ((length-total_1) == 0) | (total_1 == 0):
+         en_intitial =0
+     elif total_1 == 0:
+         print 'd'
+         en_intitial =  -((length - total_1)/float(length) * np.log2((length- total_1)/float(length)))  
+     elif (length-total_1) == 0:
+         en_intitial =  -(total_1/float(length) * np.log2(total_1/float(length)))
+     else:
+         en_intitial =  -((total_1/float(length) * np.log2(total_1/float(length)))   +  ((length - total_1)/float(length) * np.log2((length- total_1)/float(length))) )
+     return en_intitial
+
+#t = pd.DataFrame({'id':[0,1,0,1,0], 'val':[1,1,1,1,1]})
+def entropy(x):
+     columns = x.columns.values
+     x  = x.sort(columns[1], ascending =1)
+     labels = x[columns[0]].values
+     val = x[columns[1]].values
+     total_1 = sum(labels)
+     length = len(labels)
+     #print total_1,length
+     if ((length-total_1) == 0) | (total_1 == 0):
+         en_intitial =0
+     elif total_1 == 0:
+         print 'd'
+         en_intitial =  -((length - total_1)/float(length) * np.log2((length- total_1)/float(length)))  
+     elif (length-total_1) == 0:
+         en_intitial =  -(total_1/float(length) * np.log2(total_1/float(length)))
+     else:
+         en_intitial =  -((total_1/float(length) * np.log2(total_1/float(length)))   +  ((length - total_1)/float(length) * np.log2((length- total_1)/float(length))) )
+     best_cut_point = defaultdict(float)
+     for i in range(length-1):
+         if val[i] != val[i+1]:
+            
+             mid = (val[i] +val[i+1])/2.0
+             #print mid,'lllll'
+             labels_left = labels[ val<  mid]
+             labels_right = labels[ val >  mid]
+             entropy_left = entropy_forsplit(labels_left)
+             entropy_right = entropy_forsplit(labels_right)
+             total_cut_entropy = ((len(labels_left)/float(length) ) * entropy_left) +  (len(labels_right)/float(length) ) * entropy_right
+             best_cut_point[mid] = en_intitial - total_cut_entropy
+             
+     try:      
+         return max(best_cut_point.iteritems(), key=operator.itemgetter(1))[0]
+     except:
+         return
+    
+
+
+
+def cal_entropy(train,col1,col2):
+    
+    cut_points = []
+    for i in range(0,10):
+        if i==0:
+            k1 = entropy(train[[col1, col2]])
+            k2 = k1
+            cut_points.append(k1)
+            
+        else:
+            k1 = entropy(train.loc[train[col2] < k1,[col1, col2]])
+            if k1 != None:
+                cut_points.append(k1)
+            k2 = entropy(train.loc[train[col2] > k2,[col1,col2]])
+            if k2 != None:
+                cut_points.append(k2)
+            print k1,k2
+    return cut_points
+        
+train = pd.read_csv('../input/train.csv',parse_dates=[1,],nrows = 4000)
+        
+all_points = cal_entropy(train,'QuoteConversion_Flag', 'SalesField8')      
+        
